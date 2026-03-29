@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, useTemplateRef, watch, type PropType } from 'vue'
+import { BLOCK_SIZE, DURATION } from './utils'
 
 const props = defineProps({
   /** 内容 */
@@ -20,7 +21,6 @@ const props = defineProps({
   moveIn: {
     type: Boolean,
   },
-  /** index 测试用 */
   index: {
     type: Number,
     default: 0,
@@ -37,26 +37,26 @@ let animation: Animation | undefined
 const animationEnd = ref(true)
 const keyframeAnimationOptions: number | KeyframeAnimationOptions | undefined =
   {
-    duration: 150,
+    duration: DURATION,
     fill: 'forwards',
   }
 
 const direction = {
   top: {
     transform: 'translateY',
-    distance: -44,
+    distance: -BLOCK_SIZE,
   },
   bottom: {
     transform: 'translateY',
-    distance: 44,
+    distance: BLOCK_SIZE,
   },
   left: {
     transform: 'translateX',
-    distance: -44,
+    distance: -BLOCK_SIZE,
   },
   right: {
     transform: 'translateX',
-    distance: 44,
+    distance: BLOCK_SIZE,
   },
 }
 
@@ -65,7 +65,7 @@ function moveInAnimation() {
   animationEnd.value = false
   animation = moveRef.value?.animate(
     [
-      { transform: `translateY(-44px)`, opacity: 0 },
+      { transform: `translateY(-${BLOCK_SIZE}px)`, opacity: 0 },
       { transform: `translateY(0px)`, opacity: 1 },
     ],
     keyframeAnimationOptions,
@@ -100,14 +100,11 @@ function moveAnimation() {
   })
 }
 watch(
-  () => props,
+  () => props.moveIn,
   (val) => {
-    if (animationEnd.value !== true || val.moveIn === undefined) {
-      return
-    }
-    val.moveIn ? moveInAnimation() : moveAnimation()
+    if (!animationEnd.value || val === undefined) return
+    val ? moveInAnimation() : moveAnimation()
   },
-  { deep: true },
 )
 </script>
 <!-- 用 v-show 控制优先级太高，动画会被立马覆盖，使用 style 控制显示 -->

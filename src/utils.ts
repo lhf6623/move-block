@@ -8,9 +8,11 @@ const directions = [
   [0, 1], // 右
   [0, -1], // 左
 ]
+export const BLOCK_SIZE = 50
+export const DURATION = 150
 
 // 初始化数据 第一次初始化数据是 1～5
-export function initData(): Array<BlockProps> {
+export function initData(): Array<MoveBlockItem> {
   /**
    * 长度为 25 的一维数组
    * 一行为 5 个元素
@@ -41,7 +43,7 @@ function randomNum(max = RANDOM_MAX) {
 export function checkPosition(
   val: number,
   index: number,
-  map: Array<BlockProps>,
+  map: Array<MoveBlockItem>,
 ) {
   const arr = getSameIndex(val, index, map)
   return arr.length >= 3
@@ -50,7 +52,7 @@ export function checkPosition(
 /**
  * 根据当前位置搜索相同的数字 获取下标数组
  */
-function getSameIndex(val: number, index: number, map: Array<BlockProps>) {
+function getSameIndex(val: number, index: number, map: Array<MoveBlockItem>) {
   const arr = [index]
   // 以 index 为起点，深度优先搜索
   function dfs(index: number) {
@@ -82,7 +84,7 @@ function getSameIndex(val: number, index: number, map: Array<BlockProps>) {
 export function removeBlock(
   val: number,
   index: number,
-  map: Array<BlockProps>,
+  map: Array<MoveBlockItem>,
 ) {
   const arr = [index]
   const res: Array<Array<MoveBlockItem>> = []
@@ -130,12 +132,11 @@ export function removeBlock(
 }
 
 /**
- * 扫描空白区域上一个格子，如果如果没有格子，就重新生成一个数字，
- * 每移动一次从新扫描一次，直到全部格子都不为空
+ * 扫描需要移动的格子和消除的格子
  * @param map
- * @returns [空白格子数组，消除格子数组]
+ * @returns [需要移动的格子数组，消除格子数组]
  */
-export function scanBlankBlock(map: Array<BlockProps>) {
+export function scanMoveBlock(map: Array<MoveBlockItem>) {
   let blankArr: Array<MoveBlockItem> = []
   let eliminateArr: Array<MoveBlockItem> = []
   for (let i = 0; i < TOTAL; i++) {

@@ -1,7 +1,7 @@
 declare global {
   type Direction = 'top' | 'bottom' | 'left' | 'right'
 
-  interface BlockProps {
+  interface MoveBlockItem {
     /** 内容 */
     content: number
     /** 空格子标记 */
@@ -10,10 +10,6 @@ declare global {
     removeDirection?: Direction
     /** 移入 */
     moveIn?: boolean
-    index: number
-  }
-
-  interface MoveBlockItem extends BlockProps {
     index: number
   }
 }

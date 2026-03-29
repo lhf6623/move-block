@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import Block from './Block.vue'
-import { initData, removeBlock, scanBlankBlock, checkPosition } from './utils'
+import { initData, removeBlock, scanMoveBlock, checkPosition } from './utils'
 
-const blockList = ref<Array<BlockProps>>([])
+const blockList = ref<Array<MoveBlockItem>>([])
 // 判断全部动画结束
 const animationEnd = ref<boolean>(false)
 // 待消除的方块
@@ -51,6 +51,9 @@ onMounted(resetGame)
 
 // 点击事件处理
 function handleClick(index: number) {
+  if(index < 0 || index >= blockList.value.length){
+    return
+  }
   if (animationEnd.value || blockList.value[index].isBlank) {
     return
   }
@@ -105,7 +108,7 @@ function fillBlank() {
       i.removeDirection = undefined
     }
   }
-  const [blankArr, eliminateArr] = scanBlankBlock(blockList.value)
+  const [blankArr, eliminateArr] = scanMoveBlock(blockList.value)
 
   if (!blankArr.length && !eliminateArr.length) {
     animationEnd.value = false
@@ -147,6 +150,9 @@ function checkEliminate() {
 
 // 全部动画完成后调用函数
 const animationEndHandler = function () {
+  if(removeCount.value <= 0){
+    return
+  }
   removeCount.value -= 1
 }
 </script>
