@@ -11,6 +11,8 @@ const directions = [
 export const BLOCK_SIZE = 50
 export const DURATION = 150
 
+// test git
+
 // 初始化数据 第一次初始化数据是 1～5
 export function initData(): Array<MoveBlockItem> {
   /**
