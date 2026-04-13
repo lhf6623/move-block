@@ -41,7 +41,7 @@ export function initData(): Array<MoveBlockItem> {
 function randomNum(max = RANDOM_MAX) {
   return Math.floor(Math.random() * max) + 1
 }
-// 检查当前位置是否符合规则
+/** 检查当前位置是否符合规则 */
 export function checkPosition(
   val: number,
   index: number,

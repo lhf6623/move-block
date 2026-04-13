@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import Block from './Block.vue'
+import HitPoints from './HitPoints.vue'
 import { initData, removeBlock, scanMoveBlock, checkPosition } from './utils'
 
 const blockList = ref<Array<MoveBlockItem>>([])
@@ -16,13 +17,16 @@ const currentIndex = ref<number>(-1)
 const score = ref<number>(0)
 // 重新开始
 const stop = ref<boolean>(false)
+// 血量
+const hp = ref<number>(5)
+// 游戏结束
+const gameOverEnd = ref<boolean>(false)
 
 watch(
   () => removeCount.value,
   (val) => {
-    if (stop.value) {
-      return
-    }
+    if (stop.value) return
+
     // 消除,点击后消除相同项
     if (removeList.value.length) {
       !val && updateBlockList()
@@ -41,6 +45,8 @@ function resetGame() {
   setTimeout(() => {
     stop.value = false
   }, 200)
+  hp.value = 5
+  gameOverEnd.value = false
 }
 function updateScore(arr: MoveBlockItem[][]) {
   const _arr = arr.flat(1)
@@ -49,18 +55,32 @@ function updateScore(arr: MoveBlockItem[][]) {
 
 onMounted(resetGame)
 
+function click(index: number) {
+  if (hp.value <= 0) return
+
+  hp.value -= 1
+  handleClick(index)
+}
+// 血量增加
+function addHp() {
+  if (hp.value >= 5) return
+
+  hp.value += 1
+}
+
 // 点击事件处理
 function handleClick(index: number) {
-  if(index < 0 || index >= blockList.value.length){
-    return
-  }
-  if (animationEnd.value || blockList.value[index].isBlank) {
-    return
-  }
+  if (index < 0 || index >= blockList.value.length) return
+
+  if (animationEnd.value || blockList.value[index].isBlank) return
+
   blockList.value[index].content += 1
   const updatedContent = blockList.value[index].content
   // 检查是否需要移除
   if (!checkPosition(updatedContent, index, blockList.value)) {
+    if (hp.value <= 0) {
+      gameOverEnd.value = true
+    }
     return
   }
   // 记录当前点击格子下标
@@ -72,14 +92,13 @@ function handleClick(index: number) {
 }
 
 function updateBlockList() {
-  if (stop.value) {
-    return
-  }
+  if (stop.value) return
+
   animationEnd.value = true
   const item = removeList.value.pop()
-  if (!item) {
-    return
-  }
+
+  if (!item) return
+
   removeCount.value = item.length
   for (const i of item) {
     const { index } = i
@@ -91,6 +110,7 @@ function updateBlockList() {
     currentIndex.value >= 0 &&
     currentIndex.value < blockList.value.length
   ) {
+    addHp()
     blockList.value[currentIndex.value].content += 1
     currentIndex.value = -1
   }
@@ -98,9 +118,8 @@ function updateBlockList() {
 
 // 消除后填补空白
 function fillBlank() {
-  if (stop.value) {
-    return
-  }
+  if (stop.value) return
+
   // 先把数据还原
   for (const i of blockList.value) {
     if (!i.isBlank) {
@@ -131,9 +150,8 @@ function fillBlank() {
 
 // 填补空白后，检查是否还有相同项需要消除
 function checkEliminate() {
-  if (stop.value) {
-    return
-  }
+  if (stop.value) return
+
   const list = blockList.value
   for (let i = 0; i < list.length; i++) {
     const item = list[i]
@@ -150,15 +168,13 @@ function checkEliminate() {
 
 // 全部动画完成后调用函数
 const animationEndHandler = function () {
-  if(removeCount.value <= 0){
-    return
-  }
+  if (removeCount.value <= 0) return
   removeCount.value -= 1
 }
 </script>
 
 <template>
-  <div class="relative h-100vh pt20px">
+  <div class="relative h-100vh pt20px bg-#f0f0f0">
     <div class="text-center py20px">
       <button
         @click="resetGame"
@@ -173,6 +189,7 @@ const animationEndHandler = function () {
         分数：{{ score }}
       </p>
     </div>
+    <HitPoints :hp="hp" />
     <div
       class="grid grid-cols-5 grid-rows-5 gap5px bg-#bbada0 wfit hfit p10px rounded-lg mxauto relative"
     >
@@ -183,14 +200,21 @@ const animationEndHandler = function () {
         :move-in="item.moveIn"
         :index="index"
         :is-blank="item.isBlank"
-        @click="() => handleClick(index)"
+        @click="() => click(index)"
         @animationEnd="animationEndHandler"
       ></Block>
-      <!-- 需要一个蒙版 -->
+      <!-- 点击之后动画还没结束不能再次点击 -->
       <div
         v-if="animationEnd"
         class="absolute top-0 left-0 w-full h-full opacity-50 z-1000"
       ></div>
+      <!-- 游戏结束弹出提示 -->
+      <div
+        v-if="gameOverEnd"
+        class="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-#000000aa opacity-70 z-1000"
+      >
+        <p class="text-2xl font-bold text-#f00">游戏结束</p>
+      </div>
     </div>
   </div>
 </template>
